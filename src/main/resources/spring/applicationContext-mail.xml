@@ -23,7 +23,7 @@
 	<bean id="javaMailSender" class="org.springframework.mail.javamail.JavaMailSenderImpl">
 		<property name="host" value="smtp.163.com" />
 		<property name="username" value="524261314@163.com" />
-		<property name="password" value="ilove4261314" />
+		<property name="password" value="xxxx" />
 		<property name="defaultEncoding" value="UTF-8" />
 		
 		<property name="javaMailProperties">
