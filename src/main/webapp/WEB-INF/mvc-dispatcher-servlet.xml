@@ -1,0 +1,47 @@
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/mvc
+        http://www.springframework.org/schema/mvc/spring-mvc.xsd
+        http://www.springframework.org/schema/context
+        http://www.springframework.org/schema/context/spring-context.xsd">
+
+    <context:component-scan base-package="com.**.controller"/>
+
+    <mvc:annotation-driven />
+
+    <!--
+    这个ViewResolver，我理解成视图解析器，有多种；既然有多种就存在一个顺序问题，
+    比如在Controller的某个方法里返回一个字符串，这个字符串代表的到底是页面文件的名字，还是生成Excel的视图名(就是在excelviews.properties里配置的那个名字)？
+
+    测试：我在ExcelController的excel()方法里返回字符串ExportExcel,而且既有这个JSP文件，又在excelviews.properties文件里有对应的配置；
+    使用如下两个配置时，在测试中发现：
+    ①如果都没有定义order，那么报404
+    ②如果只有一个定义了order，则就使用对应的那个；
+    ③如果两个定义的order值一样，则优先使用写在上面的(按视图解析器在该配置文件中的定义顺序)
+    ④如果定义了某个视图解析优先，但是又没有对应的资源(比如定义了JSP页面优先，但对应的页面不存在，则就404了)
+
+    建议：
+    定义excelviews优先，即满足excel下载，又不影响JSP；
+    -->
+    <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+        <property name="prefix" value="/WEB-INF/pages/"/>
+        <property name="suffix" value=".jsp"/>
+    </bean>
+
+    <bean class="org.springframework.web.servlet.view.ResourceBundleViewResolver">
+        <property name="order" value="1" />
+        <property name="basename" value="excelviews"/>
+    </bean>
+
+    <bean class="org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter">
+        <property name="messageConverters">
+            <list>
+                <bean class="org.springframework.http.converter.json.MappingJackson2HttpMessageConverter"/>
+            </list>
+        </property>
+    </bean>
+</beans>

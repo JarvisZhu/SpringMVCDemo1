@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd"
+       default-autowire="byName" default-lazy-init="false">
+
+    <!--
+     原项目中用的是ReloadableResourceBundleMessageSource，启动没报错，但是运行总是报错：
+     No message found under code 'test.key' for locale 'zh_CN'.
+     所以估计是没加载到资源文件；
+     后来换成ResourceBundleMessageSource就可以了，但是两者有区别，可以上网学习一下；编码、加载方式什么的都有不同；
+
+     关于资源文件必须要说明的几点：
+     1.在MyEclipse中，可以安装国际化资源文件编辑插件，自动将输入的汉字转为unicode码，但是IDEA好像不行，我在zh_CN和zh_HK里写中文，页面就出乱码；所以得手动输入对应的编码，这就很麻烦了，回头找找有木有相应的IDEA插件；
+     2.资源文件不是Java文件，i18n目录在IDEA视图中，不能放到java目录下，得放到resources目录下，否则在编译打包后会看到classes目录下根本没有i18n目录；
+     换句话说：不是Java文件的都要放到resources目录下；
+     -->
+    <bean id="messageSource" class="org.springframework.context.support.ResourceBundleMessageSource">
+        <property name="basenames">
+            <list>
+                <value>i18n.messages</value>
+                <value>i18n.pageMessage</value>
+            </list>
+        </property>
+        <!--<property name="defaultEncoding" value="UTF-8" />-->
+        <property name="useCodeAsDefaultMessage" value="true" /><!-- 当key没有定义的时候，页面会报错，加上这个就默认显示code值不会报错 -->
+        <property name="cacheSeconds" value="60" />
+    </bean>
+
+    <!-- 定义本地化变更拦截器 -->
+    <!--<bean id="localeChangeInterceptor" class="org.springframework.web.servlet.i18n.LocaleChangeInterceptor" />-->
+    <!--<bean id="defaultUrlMapping" class="org.springframework.web.servlet.handler.BeanNameUrlHandlerMapping">-->
+        <!--<property name="interceptors" ref="localeChangeInterceptor"/>-->
+        <!--<property name="order" value="1"/>-->
+    <!--</bean>-->
+    <!--<bean id="localeResolver" class="org.springframework.web.servlet.i18n.AcceptHeaderLocaleResolver"></bean>-->
+    <!--<bean id="defaultUrlMapping" class="org.springframework.web.servlet.handler.BeanNameUrlHandlerMapping">-->
+        <!--　　<property name="interceptors" ref="localeChangeInterceptor" />-->
+        <!--　　<property name="order">-->
+        <!--　　　　<value>1</value>-->
+        <!--　　</property>-->
+    <!--</bean>-->
+    <!--<bean class="org.springframework.web.servlet.mvc.annotation.DefaultAnnotationHandlerMapping">-->
+        <!--<property name="interceptors" ref="localeChangeInterceptor" />-->
+        <!--<property name="order" value="1"></property>-->
+    <!--</bean>-->
+
+    <!--<bean id="localeResolver" class="org.springframework.web.servlet.i18n.CookieLocaleResolver" />-->
+
+    <bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+        <!--
+        若没有下面这个懒加载机制，当文件超过最大值配置时，后台会抛出异常，而且根本就没有到达后台对应的方法就抛出异常了，
+        这种情况下后台方法即使有捕获异常的try...catch也是捕获不到异常的，除非你有全局的异常捕获机制。
+        加上这个懒加载机制，直到后台方法才会去检查文件是否超大，后台方法就可以捕获异常了，但有一点需要注意：
+        前台form表单可能会提交很多字段，其中包括文件字段，当文件超大时，
+        后台方法中从request中取值的第一行代码，或者说：后台方法中，第一次从request中取值的代码就会抛出异常，
+        而不管这行代码是不是要取文件字段，哪怕是取普通字段，也会抛出字段；
+         -->
+        <property name="resolveLazily" value="true"/>
+        <!-- 以字节为单位的最大上传文件的大小限制（大约10M） -->
+        <property name="maxUploadSize" value="10240000" />
+    </bean>
+</beans>
